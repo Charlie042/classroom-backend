@@ -1,0 +1,1 @@
+ALTER TABLE "department" ALTER COLUMN "name" SET DATA TYPE varchar(255);
