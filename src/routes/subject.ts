@@ -2,7 +2,6 @@ import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 import { Router } from "express";
 import { departments, subjects } from "../db/schema/app.js";
 import { db } from "../db/index.js";
-import { count } from "node:console";
 
 const router = Router();
 
@@ -10,8 +9,8 @@ router.get("/", async(req, res) => {
     try {
         const {search, department, page=1, limit=10} = req.query;
 
-        const currentPage = Math.max(1, +page);
-        const limitPerPgae = Math.max(1, +limit);
+        const currentPage = Math.max(1, parseInt(String(page),10));
+        const limitPerPgae = Math.max(1, parseInt(String(limit),10) || 10, 100);
 
         const offset = (currentPage - 1) * limitPerPgae;
 
@@ -27,7 +26,8 @@ router.get("/", async(req, res) => {
         }
 
         if(department){
-            filterConditions.push(ilike(subjects.departmentId, `%${department}%`))
+            const departmentPattern = `%${String(department).replace(/[%_]/g, '\\$&')}%`;
+            filterConditions.push(ilike(subjects.departmentId, departmentPattern))
         }
 
         const whereclause = filterConditions.length > 0 ? and(...filterConditions) : undefined;
